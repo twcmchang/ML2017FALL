@@ -122,7 +122,6 @@ def load_test(test_file, duration):
 
 def create_ft(X, list_a):
     for key in list_a:
-        a = np.log(X[key])
         b = np.square(X[key])
         X["square_"+key] = b.fillna(b.min()-1)
     return X
