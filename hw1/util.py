@@ -1,50 +1,40 @@
 ## (1) Import packages
 import numpy as np
 import pandas as pd
-import util
 import math
 import pickle
 
-def test(test_file, out_file, config_pkl, coef_pkl, MODEL_NO):
-    print("reading configuration file...")
-    config = pickle.load( open( config_pkl, "rb" ) )
+def create_ft(X, list_a):
+    for key in list_a:
+        b = np.square(X[key])
+        X["square_"+key] = b.fillna(b.min()-1)
+    return X
 
-    if 'duration' in config.keys():
-        duration = config['duration']
-        print("reading test file...")
-        test_data = util.load_test(test_file, duration = duration)
+def update_Adagrad(X, y, coef, lr, lb = None):
+    y_hat = np.dot(X, coef)
+    loss = y_hat - y
+    mse = np.sum(loss**2)/len(y)
+    rmse = math.sqrt(mse)
+    grad = np.dot(X.transpose(),loss)/len(y)
+    s_grad = grad**2
+    ada = np.sqrt(s_grad)
+    if lb==None:
+        coef = coef - lr*grad/ada
     else:
-        print("Error: not specify observation duration.")
-        return False
-    
-    if 'add_list' in config.keys():
-        print("creating features...")
-        add_list = config['add_list']
-        test_data = util.create_ft(test_data, add_list)
+        coef = coef - lr*grad/ada + (lb/len(y))*coef
+    return coef, rmse
 
-    if ('norm_mean' in config.keys()) and ('norm_std' in config.keys()):
-        print("normalizing...")
-        norm_mean = config['norm_mean']
-        norm_std = config['norm_std']
-        test_data = (test_data - norm_mean) / norm_std
-
-    if MODEL_NO==2:
-        extCol = [colname for colname in test_data.columns if 'PM2.5' in colname]
-        test_data = test_data[extCol]
-
-    test_data.insert(loc = 0, column = 'intercept', value = 1)
-
-    print("loading trained coefficients...")
-
-    coef = pickle.load( open( coef_pkl, "rb" ) )
-
-    ## (10) Predict
-    result = test_data.dot(coef)
-    result.index = ['id_' + str(s) for s in range(240)]
-    result.to_csv(out_file, index_label = ['id'], header = ['value'])
-
-    print("completed and written in %s" % out_file)
-    return True
+def update_GD(X, y, coef, lr, lb = None):
+    y_hat = np.dot(X, coef)
+    loss = y_hat - y
+    mse = np.sum(loss**2)/len(y)
+    rmse = math.sqrt(mse)
+    grad = np.dot(X.transpose(),loss)/len(y)
+    if lb == None:
+        coef = coef - lr*grad
+    else:
+        coef = coef - lr*grad + (lb/len(y))*coef
+    return coef, rmse
 
 def load_train(filename, duration=9):
     ## (1) Read training data
@@ -120,34 +110,44 @@ def load_test(test_file, duration):
     test_all.columns = featureNames
     return test_all
 
-def create_ft(X, list_a):
-    for key in list_a:
-        b = np.square(X[key])
-        X["square_"+key] = b.fillna(b.min()-1)
-    return X
+def test(test_file, out_file, config_pkl, coef_pkl, MODEL_NO):
+    print("reading configuration file...")
+    config = pickle.load( open( config_pkl, "rb" ) )
 
-def update_Adagrad(X, y, coef, lr, lb = None):
-    y_hat = np.dot(X, coef)
-    loss = y_hat - y
-    mse = np.sum(loss**2)/len(y)
-    rmse = math.sqrt(mse)
-    grad = np.dot(X.transpose(),loss)/len(y)
-    s_grad = grad**2
-    ada = np.sqrt(s_grad)
-    if lb==None:
-        coef = coef - lr*grad/ada
+    if 'duration' in config.keys():
+        duration = config['duration']
+        print("reading test file...")
+        test_data = load_test(test_file, duration = duration)
     else:
-        coef = coef - lr*grad/ada + (lb/len(y))*coef
-    return coef, rmse
+        print("Error: not specify observation duration.")
+        return False
+    
+    if 'add_list' in config.keys():
+        print("creating features...")
+        add_list = config['add_list']
+        test_data = create_ft(test_data, add_list)
 
-def update_GD(X, y, coef, lr, lb = None):
-    y_hat = np.dot(X, coef)
-    loss = y_hat - y
-    mse = np.sum(loss**2)/len(y)
-    rmse = math.sqrt(mse)
-    grad = np.dot(X.transpose(),loss)/len(y)
-    if lb == None:
-        coef = coef - lr*grad
-    else:
-        coef = coef - lr*grad + (lb/len(y))*coef
-    return coef, rmse
+    if ('norm_mean' in config.keys()) and ('norm_std' in config.keys()):
+        print("normalizing...")
+        norm_mean = config['norm_mean']
+        norm_std = config['norm_std']
+        test_data = (test_data - norm_mean) / norm_std
+
+    if MODEL_NO==2:
+        extCol = [colname for colname in test_data.columns if 'PM2.5' in colname]
+        test_data = test_data[extCol]
+
+    test_data.insert(loc = 0, column = 'intercept', value = 1)
+
+    print("loading trained coefficients...")
+
+    coef = pickle.load( open( coef_pkl, "rb" ) )
+
+    ## (10) Predict
+    result = test_data.dot(coef)
+    result.index = ['id_' + str(s) for s in range(240)]
+    result.to_csv(out_file, index_label = ['id'], header = ['value'])
+
+    print("completed and written in %s" % out_file)
+    return True
+
