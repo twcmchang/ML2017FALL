@@ -10,7 +10,7 @@ import keras
 from keras.models import Model
 from keras.layers import Flatten
 from keras.layers import Dense
-from keras.layers import activation
+from keras.layers import Activation
 from keras.layers import BatchNormalization
 from keras.layers import Input
 from keras.layers import Conv2D
