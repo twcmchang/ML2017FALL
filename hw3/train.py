@@ -49,8 +49,8 @@ def train(args):
     adam = keras.optimizers.Adam(lr=args.learning_rate, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0)
     md.compile(loss='categorical_crossentropy',optimizer=adam,metrics=['accuracy'])
 
-    checkpoint = ModelCheckpoint(os.path.join(args.save_dir,'model.h5'),monitor='val_loss',verbose=1,save_best_only=True,mode='auto')
-    csv_logger = CSVLogger(os.path.join(args.save_dir,'training.log'))
+    checkpoint = keras.callbacks.ModelCheckpoint(os.path.join(args.save_dir,'model.h5'),monitor='val_loss',verbose=1,save_best_only=True,mode='auto')
+    csv_logger = keras.callbacks.CSVLogger(os.path.join(args.save_dir,'training.log'))
 
     md.fit_generator(generator = train_generator.generate(batch_size=args.batch_size),
                     epochs=args.n_epoch,
