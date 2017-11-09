@@ -12,9 +12,9 @@ from utils import DataLoader, DataGenerator
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--train_file', type=str, default='/Users/chunmingchang/ML2017/hw3/train.csv',
+    parser.add_argument('--train_file', type=str, default='train.csv',
                         help='training filename')
-    parser.add_argument('--test_file', type=str, default='/Users/chunmingchang/ML2017/hw3/test.csv',
+    parser.add_argument('--test_file', type=str, default='test.csv',
                         help='testing filename')
     parser.add_argument('--num_classes', type=int, default=10,
                     help='number of classes')
