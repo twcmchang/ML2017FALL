@@ -18,7 +18,6 @@ from keras.layers import GlobalMaxPooling2D
 from keras import backend as K
 
 def model(input_shape=None, num_classes=10):
-
     img_input = Input(shape=input_shape)
     # Block 1
     x = Conv2D(64, (3, 3), activation='relu', padding='same', name='block1_conv1')(img_input)
@@ -53,5 +52,4 @@ def model(input_shape=None, num_classes=10):
     x = Dense(num_classes, activation='softmax', name='predictions')(x)
 
     model = Model(img_input, x, name='vgg16')
-
     return model

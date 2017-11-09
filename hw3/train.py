@@ -3,12 +3,12 @@ import pandas as pd
 import os
 import sys
 import time
+import keras
 import argparse
 from six.moves import cPickle
 from sklearn.model_selection import train_test_split
 from model import model
 from utils import DataLoader, DataGenerator
-from keras.callbacks import ModelCheckpoint,CSVLogger
 
 def main():
     parser = argparse.ArgumentParser()
@@ -42,17 +42,17 @@ def train(args):
     train_generator = DataGenerator(X_train,y_train,num_classes=args.num_classes,shuffle=True)
 
     if args.init_from is not None:
-        model = keras.models.load_model(args.init_from)
+        md = keras.models.load_model(args.init_from)
     else:
-        model = model(input_shape=X_train[0].shape,num_classes=args.num_classes)
-    model.summary()
+        md = model(input_shape=X_train[0].shape,num_classes=args.num_classes)
+    md.summary()
     adam = keras.optimizers.Adam(lr=args.learning_rate, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0)
     model.compile(loss='categorical_crossentropy',optimizer=adam,metrics=['accuracy'])
 
     checkpoint = ModelCheckpoint(os.path.join(args.save_dir,'model.h5'),monitor='val_loss',verbose=1,save_best_only=True,mode='auto')
     csv_logger = CSVLogger(os.path.join(args.save_dir,'training.log'))
 
-    model.fit_generator(generator = train_generator.generate(batch_size=args.batch_size),
+    md.fit_generator(generator = train_generator.generate(batch_size=args.batch_size),
                     epochs=args.n_epoch,
                     steps_per_epoch = 200,
                     validation_data = (X_val,y_val),
