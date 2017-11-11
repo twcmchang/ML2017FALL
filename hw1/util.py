@@ -112,7 +112,7 @@ def load_test(test_file, duration):
 
 def test(test_file, out_file, config_pkl, coef_pkl, MODEL_NO):
     print("reading configuration file...")
-    config = pickle.load( open( config_pkl, "rb" ) )
+    config = pd.read_pickle( open( config_pkl, "rb" ) )
 
     if 'duration' in config.keys():
         duration = config['duration']
