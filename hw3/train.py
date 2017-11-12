@@ -12,10 +12,8 @@ from utils import DataLoader, DataGenerator
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--train_file', type=str, default='train.csv',
-                        help='training filename')
-    parser.add_argument('--test_file', type=str, default='test.csv',
-                        help='testing filename')
+    parser.add_argument('--file', type=str, default=None,
+                        help='filename')
     parser.add_argument('--num_classes', type=int, default=10,
                     help='number of classes')
     parser.add_argument('--save_dir', type=str, default='save',
@@ -33,11 +31,10 @@ def main():
     train(args)
 
 def train(args):
-    if args.train_file is not None and args.test_file is not None:
-        d = DataLoader(train_file=args.train_file,test_file=args.test_file,num_classes=args.num_classes)
+    if args.file is not None:
+        d = DataLoader(train_file=args.file,num_classes=args.num_classes)
     else:
-        d = DataLoader(train_file="train.csv",num_classes=args.num_classes)
-
+        sys.exit("Error! Please specify your training file.")
     X_train, X_val, y_train, y_val = train_test_split(d.X_train, d.Y_train, test_size=0.25)
     train_generator = DataGenerator(X_train,y_train,num_classes=args.num_classes,shuffle=True)
 
