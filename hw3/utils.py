@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 
 class DataLoader(object):
-    def __init__(self, train_file=None, test_file=None, num_classes = 10):
+    def __init__(self, train_file=None, test_file=None, num_classes = 7):
         if train_file is not None:
             d = pd.read_csv(train_file)
             print('read training dataset: %d records' % d.shape[0])
@@ -16,7 +16,7 @@ class DataLoader(object):
                 y.append(d['label'][i])
                 print('working on %d/%d' % (i, d.shape[0]), end='\r')
             self.X_train = np.array(x)
-            self.Y_train = self.__one_hot_encoding(np.array(y),num_classes=10)
+            self.Y_train = self.__one_hot_encoding(np.array(y),num_classes=num_classes)
 
         if test_file is not None:
             d = pd.read_csv(test_file)
@@ -37,7 +37,7 @@ class DataLoader(object):
 
 class DataGenerator(object):
     # 'Generates data for Keras'
-    def __init__(self, list_x, labels, num_classes = 10, shuffle = True):
+    def __init__(self, list_x, labels, num_classes = 7, shuffle = True):
         self.X = list_x
         self.Y = labels
         self.num_classes = num_classes

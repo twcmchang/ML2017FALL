@@ -76,7 +76,7 @@ def model(input_shape=None, num_classes=7):
     # x = MaxPooling2D((2, 2), strides=(2, 2), name='block5_pool')(x)
 
     #x = Flatten(name='flatten')(x)
-    x = Dense(256,name='fc1')(x)
+    x = Dense(1024,name='fc1')(x)
     x = BatchNormalization()(x)
     x = Activation('relu')(x)
     x = Dense(num_classes, activation='softmax', name='predictions')(x)
