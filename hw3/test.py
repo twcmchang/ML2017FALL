@@ -16,7 +16,7 @@ def main():
                         help='testing filename')
     parser.add_argument('--output', type=str, default=None,
                         help='output filename')
-    parser.add_argument('--num_classes', type=int, default=10,
+    parser.add_argument('--num_classes', type=int, default=7,
                     help='number of classes')
     parser.add_argument('--init_from', type=str, default='save',
                         help='continue training from saved model at this path')

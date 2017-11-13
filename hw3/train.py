@@ -14,7 +14,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--file', type=str, default=None,
                         help='filename')
-    parser.add_argument('--num_classes', type=int, default=10,
+    parser.add_argument('--num_classes', type=int, default=7,
                     help='number of classes')
     parser.add_argument('--save_dir', type=str, default='save',
                         help='directory to store checkpointed models')

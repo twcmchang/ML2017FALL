@@ -19,7 +19,7 @@ from keras.layers import GlobalAveragePooling2D
 from keras.layers import GlobalMaxPooling2D
 from keras import backend as K
 #congrats! the last year!!!!! love you waiting for you 
-def model(input_shape=None, num_classes=10):
+def model(input_shape=None, num_classes=7):
     img_input = Input(shape=input_shape)
     # Block 1
     x = Conv2D(64, (3, 3), padding='same', name='block1_conv1')(img_input)
