@@ -10,6 +10,7 @@ import keras
 from keras.models import Model
 from keras.layers import Flatten
 from keras.layers import Dense
+from keras.layers import Dropout
 from keras.layers import Activation
 from keras.layers import BatchNormalization
 from keras.layers import Input
@@ -41,19 +42,19 @@ def model(input_shape=None, num_classes=7):
     x = Activation('relu')(x)
     x = MaxPooling2D((3, 3), strides=(2, 2),name='block2_pool2')(x)
 
-    # # Block 3
-    x = Conv2D(256, (3, 3), padding='same', name='block3_conv1')(x)
-    x = BatchNormalization()(x)
-    x = Activation('relu')(x)
-    x = MaxPooling2D((3,3), strides=(2, 2), name='block3_pool1')(x)
-    x = Conv2D(256, (3, 3), padding='same', name='block3_conv2')(x)
-    x = BatchNormalization()(x)
-    x = Activation('relu')(x)
-    x = MaxPooling2D((3,3), strides=(2, 2), name='block3_pool2')(x)
-    x = Conv2D(256, (3, 3), padding='same', name='block3_conv3')(x)
-    x = BatchNormalization()(x)
-    x = Activation('relu')(x)
-    x = MaxPooling2D((3,3), strides=(2, 2), name='block3_pool3')(x)
+    # # # Block 3
+    # x = Conv2D(256, (3, 3), padding='same', name='block3_conv1')(x)
+    # x = BatchNormalization()(x)
+    # x = Activation('relu')(x)
+    # x = MaxPooling2D((3,3), strides=(2, 2), name='block3_pool1')(x)
+    # x = Conv2D(256, (3, 3), padding='same', name='block3_conv2')(x)
+    # x = BatchNormalization()(x)
+    # x = Activation('relu')(x)
+    # x = MaxPooling2D((3,3), strides=(2, 2), name='block3_pool2')(x)
+    # x = Conv2D(256, (3, 3), padding='same', name='block3_conv3')(x)
+    # x = BatchNormalization()(x)
+    # x = Activation('relu')(x)
+    # x = MaxPooling2D((3,3), strides=(2, 2), name='block3_pool3')(x)
 
     # # Block 4
     # x = Conv2D(512, (3, 3), padding='same', name='block4_conv1')(x)
@@ -79,7 +80,7 @@ def model(input_shape=None, num_classes=7):
     # x = Activation('relu')(x)
     # x = MaxPooling2D((2, 2), strides=(2, 2), name='block5_pool')(x)
 
-    #x = Flatten(name='flatten')(x)
+    x = Flatten(name='flatten')(x)
     x = Dense(1024,activation='relu',name='fc1')(x)
     x = Dropout(0.5)(x)
     x = Dense(1024,activation='relu',name='fc2')(x)
