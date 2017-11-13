@@ -46,7 +46,7 @@ class DataGenerator(object):
     def generate(self,batch_size):
         while 1:
             indexes = np.arange(len(self.X))
-            if(self.shuffle==True):
+            if(self.shuffle):
                 np.random.shuffle(indexes)             
             # Generate batches
             imax = int(len(indexes)/batch_size)

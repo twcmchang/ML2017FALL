@@ -31,6 +31,10 @@ def model(input_shape=None, num_classes=7):
     x = BatchNormalization()(x)
     x = Activation('relu')(x)
     x = MaxPooling2D((3, 3), strides=(2, 2), name='block1_pool2')(x)
+    x = Conv2D(64, (3, 3), padding='same', name='block1_conv3')(x)
+    x = BatchNormalization()(x)
+    x = Activation('relu')(x)
+    x = MaxPooling2D((3, 3), strides=(2, 2), name='block1_pool3')(x)
 
     # Block 2
     x = Conv2D(128, (3, 3), padding='same', name='block2_conv1')(x)
@@ -82,9 +86,9 @@ def model(input_shape=None, num_classes=7):
 
     x = Flatten(name='flatten')(x)
     x = Dense(1024,activation='relu',name='fc1')(x)
-    x = Dropout(0.5)(x)
+    x = Dropout(0.25)(x)
     x = Dense(1024,activation='relu',name='fc2')(x)
-    x = Dropout(0.5)(x)
+    x = Dropout(0.25)(x)
     x = Dense(num_classes, activation='softmax', name='predictions')(x)
 
     model = Model(img_input, x, name='mymodel')
