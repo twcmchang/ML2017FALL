@@ -12,5 +12,5 @@ def main():
     emotion_classifier.summary()
     plot_model(emotion_classifier,to_file='model.png')
 
-if __name__=='__main':
+if __name__=='__main__':
     main()
