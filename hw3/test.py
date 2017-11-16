@@ -6,9 +6,8 @@ import time
 import keras
 import argparse
 from six.moves import cPickle
-from sklearn.model_selection import train_test_split
 from model import model
-from utils import DataLoader, DataGenerator
+from utils import DataLoader
 
 def main():
     parser = argparse.ArgumentParser()
