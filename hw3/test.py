@@ -12,21 +12,21 @@ from utils import DataLoader, DataGenerator
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--file', type=str, default=None,
+    parser.add_argument('--filename', type=str, default=None,
                         help='testing filename')
     parser.add_argument('--output', type=str, default=None,
                         help='output filename')
     parser.add_argument('--num_classes', type=int, default=7,
                     help='number of classes')
-    parser.add_argument('--init_from', type=str, default='save',
+    parser.add_argument('--init_from', type=str, default='save/model.h5',
                         help='continue training from saved model at this path')
 
     args = parser.parse_args()
     test(args)
 
 def test(args):
-    if args.file is not None:
-        d = DataLoader(test_file=args.file,num_classes=args.num_classes)
+    if args.filename is not None:
+        d = DataLoader(test_file=args.filename,num_classes=args.num_classes)
     else:
         sys.exit("Error! Please specify your testing file.")
 
