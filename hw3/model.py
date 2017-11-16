@@ -1,12 +1,4 @@
-"""VGG16 model for Keras.
-# Reference
-- [Very Deep Convolutional Networks for Large-Scale Image Recognition](https://arxiv.org/abs/1409.1556)
-"""
-from __future__ import print_function
-from __future__ import absolute_import
-
 import keras
-
 from keras.models import Model
 from keras.layers import Flatten
 from keras.layers import Dense
