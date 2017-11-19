@@ -81,8 +81,8 @@ def train(args):
     md.fit_generator(generator = train_gen.generate(args.batch_size),
                     epochs=args.n_epoch,
                     steps_per_epoch = 400,
-                    validation_data = val_gen.generate(10000),
-                    validation_steps = 10,
+                    validation_data = val_gen.generate(1000),
+                    validation_steps = 100,
                     callbacks=[checkpoint,csv_logger])
 
     with open(os.path.join(args.save_dir, 'args.pkl'), 'wb') as f:
