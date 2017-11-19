@@ -6,7 +6,7 @@ import time
 import keras
 import argparse
 from six.moves import cPickle
-from model import model
+from model import SentiLSTM
 from utils import DataLoader
 
 def main():
@@ -36,20 +36,21 @@ def test(args):
         config = cPickle.load(f)
 
     d = DataLoader()
+    d.vocab = vocab
     if args.test_file is not None:
         d.read_test(test_file=args.test_file)
         d.generate_X_test(maxlen=config.n_word)
     else:
         sys.exit("Error! Please specify your testing file.")
 
-    if args.init_from is not None:
-        md = keras.models.load_model(args.init_from)
+    if args.model is not None:
+        md = keras.models.load_model(args.model)
     else:
         sys.exit("Error! Please specify your model in use.")
     md.summary()
 
     y_pred = md.predict(d.test_data)
-    labels = [np.argmax(y_pred[i]) for i in range(len(y_pred))]
+    labels = [1 if y_pred[i]>0.5 else 0 for i in range(len(y_pred))]
     output = pd.DataFrame({"id":range(len(y_pred)),"label":labels})
     output.to_csv(args.output, index=False)
     print("Testing completed and saved into %s." % args.output)

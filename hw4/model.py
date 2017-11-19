@@ -13,7 +13,7 @@ class SentiLSTM():
         print('Build model...')
         model = Sequential()
         model.add(Embedding(self.n_vocab, self.dim_word_embed,input_length = self.n_word))
-        model.add(LSTM(self.dim_hidden, dropout=0.2, recurrent_dropout=0.2))
-        model.add(Dense(1, activation='sigmoid'))
+        model.add(LSTM(self.dim_hidden, dropout=0.3, recurrent_dropout=0.3))
+        model.add(Dense(2, activation='sigmoid'))
 
         return(model)
