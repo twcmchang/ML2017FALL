@@ -72,7 +72,7 @@ def train(args):
     else:
         md = SentiLSTM(args).build()
     md.summary()
-    opt = keras.optimizers.Adadelta(lr=args.learning_rate, rho=0.95, epsilon=1e-08, decay=0.0)
+    opt = keras.optimizers.RMSprop(lr=args.learning_rate, rho=0.9, epsilon=1e-08, decay=0.0)
     md.compile(loss='binary_crossentropy',optimizer=opt,metrics=['accuracy'])
 
     checkpoint = keras.callbacks.ModelCheckpoint(os.path.join(args.save_dir,'lstm'+str(args.dim_hidden)+'_wemb'+str(args.dim_word_embed)+'_model.h5'),monitor='val_loss',verbose=1,save_best_only=True,mode='auto')
