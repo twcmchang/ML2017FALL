@@ -8,7 +8,7 @@ import keras
 from six.moves import cPickle
 from sklearn.model_selection import train_test_split
 from model import SentiLSTM
-from new_utils import DataLoader, DataGenerator
+from utils import DataLoader, DataGenerator
 
 def main():
     parser = argparse.ArgumentParser()
@@ -75,8 +75,8 @@ def train(args):
     opt = keras.optimizers.Adadelta(lr=args.learning_rate, rho=0.95, epsilon=1e-08, decay=0.0)
     md.compile(loss='binary_crossentropy',optimizer=opt,metrics=['accuracy'])
 
-    checkpoint = keras.callbacks.ModelCheckpoint(os.path.join(args.save_dir,'lstm',args.dim_hidden,'_wemb',args.dim_word_embed,'_model.h5'),monitor='val_loss',verbose=1,save_best_only=True,mode='auto')
-    csv_logger = keras.callbacks.CSVLogger(os.path.join(args.save_dir,'lstm',args.dim_hidden,'_wemb',args.dim_word_embed,'_training.log'))
+    checkpoint = keras.callbacks.ModelCheckpoint(os.path.join(args.save_dir,'lstm'+str(args.dim_hidden)+'_wemb'+str(args.dim_word_embed)+'_model.h5'),monitor='val_loss',verbose=1,save_best_only=True,mode='auto')
+    csv_logger = keras.callbacks.CSVLogger(os.path.join(args.save_dir,'lstm'+str(args.dim_hidden)+'_wemb'+str(args.dim_word_embed)+'_training.log'))
 
     md.fit_generator(generator = train_gen.generate(args.batch_size),
                     epochs=args.n_epoch,
