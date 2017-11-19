@@ -50,7 +50,7 @@ def test(args):
     md.summary()
 
     y_pred = md.predict(d.test_data)
-    labels = [1 if y_pred[i]>0.5 else 0 for i in range(len(y_pred))]
+    labels = [np.argmax(y_pred[i]) for i in range(len(y_pred))]
     output = pd.DataFrame({"id":range(len(y_pred)),"label":labels})
     output.to_csv(args.output, index=False)
     print("Testing completed and saved into %s." % args.output)

@@ -52,6 +52,11 @@ class DataLoader(object):
             string = re.sub(r"!", "", string)
             string = re.sub(r"\?", "", string)
         return string.lower().strip()
+        
+    def __one_hot_encoding(self, arr, num_classes):
+        res = np.zeros((arr.size, num_classes))
+        res[np.arange(arr.size),arr] = 1
+        return(res)
 
     def read_train(self, train_file=None):
         if train_file is not None:
@@ -63,7 +68,7 @@ class DataLoader(object):
                     train_label.append(line[0])
                     train_sentence.append(self.clean_str(line[1]))
             self.train_sentence = train_sentence
-            self.train_label    = train_label
+            self.train_label    = self.__one_hot_encoding(np.array(train_label),2)
 
     def read_test(self, test_file=None):
         if test_file is not None:
