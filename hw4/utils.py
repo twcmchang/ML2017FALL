@@ -65,7 +65,7 @@ class DataLoader(object):
                 train_label = []
                 for line in f:
                     line = line.split(" +++$+++ ")
-                    train_label.append(line[0])
+                    train_label.append(int(line[0]))
                     train_sentence.append(self.clean_str(line[1]))
             self.train_sentence = train_sentence
             self.train_label    = self.__one_hot_encoding(np.array(train_label),2)
