@@ -9,8 +9,8 @@ class DataLoader(object):
 
     def split_padding_sentence(self, sentence, maxlen):    
         sentence = sentence.lower().split(' ')
-        sentence = np.append(['<BOS>'],sentence)
-        sentence = np.append(sentence,['<EOS>'])
+#        sentence = np.append(['<BOS>'],sentence)
+#        sentence = np.append(sentence,['<EOS>'])
         caplen = len(sentence)
         if caplen < maxlen:
             sentence = np.append(sentence, np.repeat('<PAD>',maxlen-caplen))
