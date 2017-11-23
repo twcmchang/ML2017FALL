@@ -29,10 +29,10 @@ def main():
 
 def test(args):
     print("reading vocabulary...")
-    with open(os.path.join(args.save_dir, 'vocab.pkl'), 'rb') as f:
+    with open(os.path.join(args.vocab), 'rb') as f:
         vocab = cPickle.load(f)
 
-    with open(os.path.join(args.save_dir, 'args.pkl'), 'rb') as f:
+    with open(os.path.join(args.config), 'rb') as f:
         config = cPickle.load(f)
 
     d = DataLoader()

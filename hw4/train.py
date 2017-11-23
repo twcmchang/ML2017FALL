@@ -22,13 +22,13 @@ def main():
                         help='dimension of word embedding')    
     parser.add_argument('--dim_hidden', type=int, default=1000,
                         help='dimension of LSTM hidden state')
-    parser.add_argument('--n_word', type=int, default=40,
+    parser.add_argument('--n_word', type=int, default=20,
                         help='maximal number of words in a sentence')
     parser.add_argument('--n_vocab', type=int, default=4000,
                         help='vocabulary size')
     parser.add_argument('--n_epoch', type=int, default=100,
                         help='number of epochs')
-    parser.add_argument('--batch_size', type=int, default=50,
+    parser.add_argument('--batch_size', type=int, default=32,
                         help='minibatch size')
     parser.add_argument('--learning_rate', type=float, default=0.001,
                         help='learning rate')
@@ -39,6 +39,7 @@ def main():
     train(args)
 
 def train(args):
+
     d = DataLoader()
     if args.train_file is not None:
         d.read_train(args.train_file)
@@ -49,11 +50,14 @@ def train(args):
         d.read_test(args.test_file)
     else:
         sys.exit("Error! Please specify your testing file.")
+    
+    with open(os.path.join(args.save_dir, 'len'+str(args.n_word)+'_size'+str(args.n_vocab)+'_lstm'+str(args.dim_hidden)+'_wemb'+str(args.dim_word_embed)+'_args.pkl'), 'wb') as f:
+        cPickle.dump(args, f)
 
     print("Build vocabulary using the most frequent top %d words..." % args.n_vocab )
     d.build_word_vocab(top_k_words = args.n_vocab)
 
-    with open(os.path.join(args.save_dir, 'vocab.pkl'), 'wb') as f:
+    with open(os.path.join(args.save_dir, 'size'+str(args.n_vocab)+'_vocab.pkl'), 'wb') as f:
     	cPickle.dump(obj = d.vocab,file=f)
 
     print("Generate X_train and X_test with maximum sentence length = %d" % args.n_word)
@@ -81,12 +85,8 @@ def train(args):
     md.fit_generator(generator = train_gen.generate(args.batch_size),
                     epochs=args.n_epoch,
                     steps_per_epoch = 400,
-                    validation_data = val_gen.generate(1000),
-                    validation_steps = 100,
+                    validation_data = (X_val,y_val),
                     callbacks=[checkpoint,csv_logger])
-
-    with open(os.path.join(args.save_dir, 'args.pkl'), 'wb') as f:
-        cPickle.dump(args, f)
 
 if __name__ == '__main__':
     main()
