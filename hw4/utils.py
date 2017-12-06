@@ -73,10 +73,10 @@ class DataLoader(object):
         if test_file is not None:
             with open(test_file) as f:
                 test_sentence = []
-                first = f.readline() # skip the first header line: id,sentence
+                _ = f.readline() # skip the first header line: id,sentence
                 for line in f:
-                    line = line.split(",")
-                    test_sentence.append(self.clean_str(line[1]))
+                    line = ''.join(line.split(",")[1:])
+                    test_sentence.append(self.clean_str(line))
             self.test_sentence = test_sentence
 
     def build_word_vocab(self, top_k_words = 3000): 
