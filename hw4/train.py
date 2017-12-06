@@ -13,18 +13,18 @@ from utils import DataLoader, DataGenerator
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--train_file', type=str, default='data/training_label.txt',
-                        help='directory to store checkpointed models')
+                        help='input train_file')
     parser.add_argument('--test_file', type=str, default='data/testing_data.txt',
-                        help='directory to store checkpointed models')
+                        help='input test_file')
     parser.add_argument('--save_dir', type=str, default='save',
                         help='directory to store checkpointed models')
     parser.add_argument('--dim_word_embed', type=int, default=200,
-                        help='dimension of word embedding')    
+                        help='dimension of word embedding')
     parser.add_argument('--dim_hidden', type=int, default=1000,
                         help='dimension of LSTM hidden state')
     parser.add_argument('--n_word', type=int, default=20,
                         help='maximal number of words in a sentence')
-    parser.add_argument('--n_vocab', type=int, default=4000,
+    parser.add_argument('--n_vocab', type=int, default=80000,
                         help='vocabulary size')
     parser.add_argument('--n_epoch', type=int, default=100,
                         help='number of epochs')
@@ -69,13 +69,14 @@ def train(args):
 
     print("Create data generators...")
     train_gen = DataGenerator(X_train, y_train)
-    val_gen  = DataGenerator(X_val, y_val)
 
     if args.init_from is not None:
         md = keras.models.load_model(args.init_from)
     else:
         md = SentiLSTM(args).build()
+    
     md.summary()
+
     opt = keras.optimizers.RMSprop(lr=args.learning_rate, rho=0.9, epsilon=1e-08, decay=0.0)
     md.compile(loss='binary_crossentropy',optimizer=opt,metrics=['accuracy'])
 

@@ -35,20 +35,19 @@ class DataLoader(object):
         return return_sentence
 
     def clean_str(self,string, rm_mark = False):
-        string = re.sub(r"[^A-Za-z0-9(),!?\'\`]", " ", string)
+        string = re.sub(r"[^A-Za-z0-9(),!?\'\`\.\:]", " ", string)
         #string = re.sub(r"\'s", " is", string)
         string = re.sub(r"\'ve", " have", string)
         string = re.sub(r"n\'t", " not", string)
         string = re.sub(r"\'re", " are", string)
         string = re.sub(r"\'d", " would", string)
         string = re.sub(r"\'ll", " will", string)
-        string = re.sub(r",", " , ", string)
         string = re.sub(r"\s{0,},", " ", string)
         string = re.sub(r"\s{2,}", " ", string)
         string = re.sub(r"\(", " \( ", string)
         string = re.sub(r"\)", " \) ", string)
-        
         if rm_mark:
+            string = re.sub(r",", " , ", string)
             string = re.sub(r"!", "", string)
             string = re.sub(r"\?", "", string)
         return string.lower().strip()
@@ -95,19 +94,19 @@ class DataLoader(object):
 
         # Build mapping
         vocab_inv = {}
-        vocab_inv[0] = '<BOS>'
-        vocab_inv[1] = '<EOS>'
-        vocab_inv[2] = '<PAD>'
-        vocab_inv[3] = '<UNK>'
+        #vocab_inv[0] = '<BOS>'
+        #vocab_inv[1] = '<EOS>'
+        vocab_inv[0] = '<PAD>'
+        vocab_inv[1] = '<UNK>'
 
         vocab = {}
-        vocab['<BOS>'] = 0
-        vocab['<EOS>'] = 1
-        vocab['<PAD>'] = 2
-        vocab['<UNK>'] = 3
+        #vocab['<BOS>'] = 0
+        #vocab['<EOS>'] = 1
+        vocab['<PAD>'] = 0
+        vocab['<UNK>'] = 1
 
-        idx = 4
-        for i in range(top_k_words-4):
+        idx = 2
+        for i in range(top_k_words-2):
             vocab[vocab_tmp[i]] = idx+i
             vocab_inv[idx+i] = vocab_tmp[i]
 
