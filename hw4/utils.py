@@ -24,7 +24,7 @@ class DataLoader(object):
         idx_sentence = []
         for w in sentence: # append sentences
             if w not in self.vocab:
-                idx_sentence.append(self.vocab['<UNK>'])
+                idx_sentence.append(0.)
             else:
                 idx_sentence.append(self.vocab[w])   
         # to numpy array
@@ -94,7 +94,7 @@ class DataLoader(object):
             self.augment_sentence = augment_sentence
     
     def set_word_vocab(self,vocab):
-        vocab_int = {}
+        vocab_inv = {}
         for key in vocab.keys():
             vocab_inv[vocab[key]] = key
         self.vocab = vocab
