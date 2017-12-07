@@ -20,13 +20,13 @@ def main():
                         help='input test_file')
     parser.add_argument('--save_dir', type=str, default='save',
                         help='directory to store checkpointed models')
-    parser.add_argument('--n_word', type=int, default=35,
+    parser.add_argument('--n_word', type=int, default=39,
                         help='maximal number of words in a sentence')
     parser.add_argument('--w2v_vocab', type=str, default=None,
                         help='pre-trained w2v model')
     parser.add_argument('--w2v_weight', type=str, default=None,
                         help='pre-trained w2v weight')
-    parser.add_argument('--n_epoch', type=int, default=100,
+    parser.add_argument('--n_epoch', type=int, default=20,
                         help='number of epochs')
     parser.add_argument('--batch_size', type=int, default=64,
                         help='minibatch size')
@@ -86,7 +86,7 @@ def train(args):
         cPickle.dump(obj = d.vocab,file=f)
 
     print("Training and testing split...")
-    X_train, X_val, y_train, y_val = train_test_split(d.train_data, d.train_label, test_size=0.2)
+    X_train, X_val, y_train, y_val = train_test_split(d.train_data, d.train_label, test_size=0.1)
 
     opt = keras.optimizers.RMSprop(lr=args.learning_rate, rho=0.9, epsilon=1e-08, decay=0.0)
     md.compile(loss='binary_crossentropy',optimizer=opt,metrics=['accuracy'])
