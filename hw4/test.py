@@ -15,12 +15,6 @@ def main():
                         help='testing filename')
     parser.add_argument('--output', type=str, default=None,
                         help='output filename')
-    parser.add_argument('--config', type=str, default='save/args.pkl',
-                        help='configuration file')
-    parser.add_argument('--vocab', type=str, default='save/vocab.pkl',
-                        help='model file')
-    parser.add_argument('--model', type=str, default='save/model.h5',
-                        help='model file')
     parser.add_argument('--save_dir', type=str, default='save/',
                         help='save directory')
 
@@ -43,8 +37,8 @@ def test(args):
     else:
         sys.exit("Error! Please specify your testing file.")
 
-    if args.model is not None:
-        md = keras.models.load_model(args.model)
+    if os.path.exists(os.path.join(args.save_dir,"model.h5")):
+        md = keras.models.load_model(os.path.join(args.save_dir,"model.h5"))
     else:
         sys.exit("Error! Please specify your model in use.")
     md.summary()
