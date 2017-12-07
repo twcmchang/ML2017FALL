@@ -40,15 +40,6 @@ def main():
                         help='self training or not')
 
     args = parser.parse_args()
-    
-    if not args.self_training:
-        print("training from scratch!")
-        train(args)
-    else:
-        print("self training mode!")
-        self_train(args)
-
-    args = parser.parse_args()
     train(args)
 
 def train(args):
