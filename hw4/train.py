@@ -20,17 +20,15 @@ def main():
                         help='input test_file')
     parser.add_argument('--save_dir', type=str, default='save',
                         help='directory to store checkpointed models')
-    parser.add_argument('--dim_word_embed', type=int, default=200,
-                        help='dimension of word embedding')
-    parser.add_argument('--dim_hidden', type=int, default=1000,
-                        help='dimension of LSTM hidden state')
-    parser.add_argument('--n_word', type=int, default=20,
+    parser.add_argument('--n_word', type=int, default=35,
                         help='maximal number of words in a sentence')
-    parser.add_argument('--n_vocab', type=int, default=80000,
-                        help='vocabulary size')
+    parser.add_argument('--w2v_vocab', type=str, default=None,
+                        help='pre-trained w2v model')
+    parser.add_argument('--w2v_weight', type=str, default=None,
+                        help='pre-trained w2v weight')
     parser.add_argument('--n_epoch', type=int, default=100,
                         help='number of epochs')
-    parser.add_argument('--batch_size', type=int, default=32,
+    parser.add_argument('--batch_size', type=int, default=64,
                         help='minibatch size')
     parser.add_argument('--learning_rate', type=float, default=0.001,
                         help='learning rate')
@@ -53,30 +51,20 @@ def train(args):
     if args.unlabeled_file is not None:
         d.read_augment(args.unlabeled_file)
 
-    if args.init_from is not None:
-        if not os.path.exists(args.init_from,"model.h5"):
-            sys.exit("Error! model file is not found.")
-            
-        if not os.path.exists(args.init_from,"args.pkl"):
-            sys.exit("Error! configuration file is not found.")
-            
-        if not os.path.exists(args.init_from,"vocab.pkl"):
-            sys.exit("Error! vocabulary file is not found.")
-            
-        md = keras.models.load_model(os.path.join(args.init_from,"model.h5"))
-        with open(os.path.join(args.init_from,"args.pkl"), 'rb') as f:
-            config = cPickle.load(f)
-            args.n_word     = config.n_word
-            args.n_vocab    = confif.n_vocab
-            args.dim_hidden = config.dim_hidden
-            args.dim_word_embed = config.dim_word_embed
-        with open(os.path.join(args.init_from,"vocab.pkl"), 'rb') as f:
-            d.set_existing_vocab(f)
-
+    if args.w2v_vocab is not None:
+        with open(args.w2v_vocab, 'rb') as f:
+            vocab = cPickle.load(f)
+            d.set_word_vocab(vocab)
     else:
-        md = SentiLSTM(args).build()
         print("Build vocabulary using the most frequent top %d words..." % args.n_vocab )
         d.build_word_vocab(top_k_words = args.n_vocab)
+
+    if args.init_from is not None:
+        if not os.path.exists(os.path.join(args.init_from,"model.h5")):
+            sys.exit("Error! model file is not found.")
+        md = keras.models.load_model(os.path.join(args.init_from,"model.h5"))
+    else:
+        md = SentiLSTM(args).build()
 
     print("Generate X_train and X_test with maximum sentence length = %d" % args.n_word)
     d.generate_X_train(maxlen=args.n_word)
@@ -100,52 +88,45 @@ def train(args):
     print("Training and testing split...")
     X_train, X_val, y_train, y_val = train_test_split(d.train_data, d.train_label, test_size=0.2)
 
-    md.summary()
-    if args.init_from is None:
-        print("Create data generators...")
-        train_gen = DataGenerator(X_train, y_train)
-        
-        opt = keras.optimizers.RMSprop(lr=args.learning_rate, rho=0.9, epsilon=1e-08, decay=0.0)
-        md.compile(loss='binary_crossentropy',optimizer=opt,metrics=['accuracy'])
+    opt = keras.optimizers.RMSprop(lr=args.learning_rate, rho=0.9, epsilon=1e-08, decay=0.0)
+    md.compile(loss='binary_crossentropy',optimizer=opt,metrics=['accuracy'])
 
-        checkpoint = keras.callbacks.ModelCheckpoint(os.path.join(args.save_dir,'lstm'+str(args.dim_hidden)+'_wemb'+str(args.dim_word_embed)+'_model.h5'),monitor='val_loss',verbose=1,save_best_only=True,mode='auto')
-        csv_logger = keras.callbacks.CSVLogger(os.path.join(args.save_dir,'lstm'+str(args.dim_hidden)+'_wemb'+str(args.dim_word_embed)+'_training.log'))
-        earlystop  = keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0.001, patience=5, verbose=0, mode='auto')
+    checkpoint = keras.callbacks.ModelCheckpoint(os.path.join(args.save_dir,'model.h5'),monitor='val_loss',verbose=1,save_best_only=True,mode='auto')
+    csv_logger = keras.callbacks.CSVLogger(os.path.join(args.save_dir,'training.log'))
+    earlystop  = keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0.0001, patience=5, verbose=0, mode='auto')
+    md.fit(X_train,y_train,
+           epochs = args.n_epoch,
+           validation_data = (X_val,y_val),
+           callbacks = [checkpoint,csv_logger,earlystop])
 
-        md.fit_generator(generator = train_gen.generate(args.batch_size),
-                        epochs=args.n_epoch,
-                        steps_per_epoch = 400,
-                        validation_data = (X_val,y_val),
-                        callbacks=[checkpoint,csv_logger,earlystop])
+    # if args.self_training_round > 0:
+    #     def one_hot_encoding(self, arr, num_classes):
+    #         res = np.zeros((arr.size, num_classes))
+    #         res[np.arange(arr.size),arr] = 1
+    #         return(res)
 
-    if args.self_training_round > 0:
-        def one_hot_encoding(self, arr, num_classes):
-            res = np.zeros((arr.size, num_classes))
-            res[np.arange(arr.size),arr] = 1
-            return(res)
+    #     print("===== self training phrase =====")
 
-        print("===== self training phrase =====")
+    #     for r in range(args.self_training_round):
+    #         print("%d round..." % r)
+    #         y_pred = md.predict(d.augment_data)
+    #         i_aug = [i for i in range(len(y_pred)) if np.max(y_pred[i]) >= 0.9]
+    #         print("add %d sentences using threshold = 0.9" % len(i_aug))
+    #         labels = [np.argmax(y_pred[i]) for i in i_aug]
+    #         X_train = np.concatenate((X_train , d.augment_data[i_aug]),axis=0)
+    #         y_train = np.concatenate((y_train , one_hot_encoding(np.array(labels),2)),axis=0)
 
-        for r in range(args.self_training_round):
-            print("%d round..." % r)
-            y_pred = md.predict(d.augment_data)
-            i_aug = [i for i in range(len(y_pred)) if np.max(y_pred[i]) >= 0.9]
-            print("add %d sentences using threshold = 0.9" % len(i_aug))
-            labels = [np.argmax(y_pred[i]) for i in i_aug]
-            X_train = np.concatenate((X_train , d.augment_data[i_aug]),axis=0)
-            y_train = np.concatenate((y_train , one_hot_encoding(np.array(labels),2)),axis=0)
+    #         train_gen = DataGenerator(X_train, y_train)
 
-            train_gen = DataGenerator(X_train, y_train)
+    #         checkpoint = keras.callbacks.ModelCheckpoint(os.path.join(args.save_dir,str(r)+'_lstm'+str(args.dim_hidden)+'_wemb'+str(args.dim_word_embed)+'_model.h5'),monitor='val_loss',verbose=1,save_best_only=True,mode='auto')
+    #         csv_logger = keras.callbacks.CSVLogger(os.path.join(args.save_dir,str(r)+'_lstm'+str(args.dim_hidden)+'_wemb'+str(args.dim_word_embed)+'_training.log'))
+    #         earlystop  = keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0.001, patience=5, verbose=0, mode='auto')
 
-            checkpoint = keras.callbacks.ModelCheckpoint(os.path.join(args.save_dir,str(r)+'_lstm'+str(args.dim_hidden)+'_wemb'+str(args.dim_word_embed)+'_model.h5'),monitor='val_loss',verbose=1,save_best_only=True,mode='auto')
-            csv_logger = keras.callbacks.CSVLogger(os.path.join(args.save_dir,str(r)+'_lstm'+str(args.dim_hidden)+'_wemb'+str(args.dim_word_embed)+'_training.log'))
-            earlystop  = keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0.001, patience=5, verbose=0, mode='auto')
-
-            md.fit_generator(generator = train_gen.generate(args.batch_size),
-                            epochs=args.n_epoch,
-                            steps_per_epoch = 400,
-                            validation_data = (X_val,y_val),
-                            callbacks=[checkpoint,csv_logger,earlystop])
+    #         md.fit_generator(generator = train_gen.generate(args.batch_size),
+    #                         epochs=args.n_epoch,
+    #                         steps_per_epoch = 400,
+    #                         validation_data = (X_val,y_val),
+    #                         callbacks=[checkpoint,csv_logger,earlystop])
             # labels = [np.argmax(y_pred[i]) for i in range(len(y_pred))]
         
 
