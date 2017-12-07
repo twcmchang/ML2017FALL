@@ -6,11 +6,16 @@ import numpy as np
 class DataLoader(object):
     def __init__(self):
         super().__init__()
+        self.vocab          = None
+        self.vocab_int      = None
+        self.train_sentence = None
+        self.train_label    = None
+        self.test_sentence  = None
+        self.train_data     = None
+        self.test_data      = None
 
-    def split_padding_sentence(self, sentence, maxlen):    
+    def __split_padding_sentence(self, sentence, maxlen):    
         sentence = sentence.lower().split(' ')
-#        sentence = np.append(['<BOS>'],sentence)
-#        sentence = np.append(sentence,['<EOS>'])
         caplen = len(sentence)
         if caplen < maxlen:
             sentence = np.append(sentence, np.repeat('<PAD>',maxlen-caplen))
@@ -26,15 +31,15 @@ class DataLoader(object):
         idx_sentence = np.asarray(idx_sentence)
         return idx_sentence
 
-    def get_padding_sentence(self,batch_sentence, maxlen):
+    def __get_padding_sentence(self,batch_sentence, maxlen):
         return_sentence = []
         for i in range(len(batch_sentence)):
-            idx_sentence = self.split_padding_sentence(batch_sentence[i], maxlen)
+            idx_sentence = self.__split_padding_sentence(batch_sentence[i], maxlen)
             return_sentence.append(idx_sentence)
         return_sentence = np.vstack(return_sentence).astype(int)
         return return_sentence
 
-    def clean_str(self,string, rm_mark = False):
+    def __clean_str(self,string, rm_mark = False):
         string = re.sub(r"[^A-Za-z0-9(),!?\'\`\.\:]", " ", string)
         #string = re.sub(r"\'s", " is", string)
         string = re.sub(r"\'ve", " have", string)
@@ -65,7 +70,7 @@ class DataLoader(object):
                 for line in f:
                     line = line.split(" +++$+++ ")
                     train_label.append(int(line[0]))
-                    train_sentence.append(self.clean_str(line[1]))
+                    train_sentence.append(self.__clean_str(line[1]))
             self.train_sentence = train_sentence
             self.train_label    = self.__one_hot_encoding(np.array(train_label),2)
 
@@ -76,16 +81,32 @@ class DataLoader(object):
                 _ = f.readline() # skip the first header line: id,sentence
                 for line in f:
                     line = ''.join(line.split(",")[1:])
-                    test_sentence.append(self.clean_str(line))
+                    test_sentence.append(self.__clean_str(line))
             self.test_sentence = test_sentence
 
+    def read_augment(self, augment_file=None):
+        if augment_file is not None:
+            with open(augment_file) as f:
+                augment_sentence = []
+                _ = f.readline()
+                for line in f:
+                    augment_sentence.append(self.__clean_str(line))
+            self.augment_sentence = augment_sentence
+    
+    def set_word_vocab(self,vocab):
+        vocab_int = {}
+        for key in vocab.keys():
+            vocab_inv[vocab[key]] = key
+        self.vocab = vocab
+        self.vocab_inv = vocab_inv
+
     def build_word_vocab(self, top_k_words = 3000): 
-        sentences = self.train_sentence + self.test_sentence
+        sentences = self.train_sentence + self.test_sentence + self.augment_sentence
         word_counts = {}
         nsents = 0
         for sent in sentences:
             nsents += 1
-            sent = self.clean_str(sent)
+            sent = self.__clean_str(sent)
             for w in sent.lower().split(' '):
                 word_counts[w] = word_counts.get(w, 0) + 1
         del word_counts[""] # removed the empty string
@@ -94,14 +115,10 @@ class DataLoader(object):
 
         # Build mapping
         vocab_inv = {}
-        #vocab_inv[0] = '<BOS>'
-        #vocab_inv[1] = '<EOS>'
         vocab_inv[0] = '<PAD>'
         vocab_inv[1] = '<UNK>'
 
         vocab = {}
-        #vocab['<BOS>'] = 0
-        #vocab['<EOS>'] = 1
         vocab['<PAD>'] = 0
         vocab['<UNK>'] = 1
 
@@ -114,11 +131,17 @@ class DataLoader(object):
         self.vocab_inv = vocab_inv
 
     def generate_X_train(self, maxlen):
-        self.train_data = self.get_padding_sentence(self.train_sentence,maxlen)
+        self.train_data = self.__get_padding_sentence(self.train_sentence,maxlen)
 
     def generate_X_test(self,maxlen):
-        self.test_data = self.get_padding_sentence(self.test_sentence,maxlen)
+        self.test_data = self.__get_padding_sentence(self.test_sentence,maxlen)
 
+    def generate_X_augment(self,maxlen):
+        self.augment_data = self.__get_padding_sentence(self.augment_sentence,maxlen)
+
+    def augment_X_train(self, maxlen, data , label):
+        self.train_data  = np.concatenate((self.train_data , data),axis=0)
+        self.train_label = np.concatenate((self.train_label, self.__one_hot_encoding(np.array(label),2)),axis=0)
 
 class DataGenerator():
     # 'Generates data for Keras'
