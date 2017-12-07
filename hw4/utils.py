@@ -18,13 +18,13 @@ class DataLoader(object):
         sentence = sentence.lower().split(' ')
         caplen = len(sentence)
         if caplen < maxlen:
-            sentence = np.append(sentence, np.repeat('<PAD>',maxlen-caplen))
+            sentence = np.append(np.repeat('<PAD>',maxlen-caplen),sentence)
         else:
             sentence = sentence[:maxlen]
         idx_sentence = []
         for w in sentence: # append sentences
-            if w not in self.vocab:
-                idx_sentence.append(0.)
+            if w == '<PAD>' or w not in self.vocab:
+                idx_sentence.append(0)
             else:
                 idx_sentence.append(self.vocab[w])   
         # to numpy array
@@ -116,14 +116,12 @@ class DataLoader(object):
         # Build mapping
         vocab_inv = {}
         vocab_inv[0] = '<PAD>'
-        vocab_inv[1] = '<UNK>'
 
         vocab = {}
         vocab['<PAD>'] = 0
-        vocab['<UNK>'] = 1
 
-        idx = 2
-        for i in range(top_k_words-2):
+        idx = 1
+        for i in range(top_k_words-1):
             vocab[vocab_tmp[i]] = idx+i
             vocab_inv[idx+i] = vocab_tmp[i]
 
