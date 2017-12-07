@@ -37,7 +37,11 @@ def test(args):
     else:
         sys.exit("Error! Please specify your testing file.")
 
+<<<<<<< HEAD
     if os.path.exists(os.path.join(args.save_dir,"model.h5")):
+=======
+    if args.model is not None:
+>>>>>>> e0fcc977cdd68273fbe87983aa7042cbfffc47a7
         md = keras.models.load_model(os.path.join(args.save_dir,"model.h5"))
     else:
         sys.exit("Error! Please specify your model in use.")
