@@ -44,7 +44,7 @@ def test(args):
         sys.exit("Error! Please specify your testing file.")
 
     if args.model is not None:
-        md = keras.models.load_model(args.model)
+        md = keras.models.load_model(os.path.join(args.save_dir,"model.h5"))
     else:
         sys.exit("Error! Please specify your model in use.")
     md.summary()
