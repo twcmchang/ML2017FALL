@@ -12,9 +12,9 @@ class DataLoader(object):
         super().__init__()
         self.vocab          = None
         self.vocab_int      = None
-        self.train_sentence = None
+        self.train_sentence = []
         self.train_label    = None
-        self.test_sentence  = None
+        self.test_sentence  = []
         self.train_data     = None
         self.test_data      = None
         self.tokenizer      = None
