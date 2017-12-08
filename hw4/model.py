@@ -1,4 +1,3 @@
-# from keras.models import Sequential
 from keras.layers import Embedding,LSTM,Dense,Dropout,Bidirectional
 from keras.layers import Embedding,Input,InputLayer,Dense,Bidirectional,LSTM,Dropout
 from keras.models import Model,load_model
@@ -7,23 +6,23 @@ from six.moves import cPickle
 class SentiLSTM():
     def __init__(self, args):
         # model parameters
-        self.n_word       = args.n_word
+        self.n_word = args.n_word
         
-        if args.w2v_weight is not None:
-            with open(args.w2v_weight, 'rb') as f:
-                self.w2v_weight = cPickle.load(f)
-                print("embedd matrix shape: ",self.w2v_weight.shape)
-            self.dim_word_embed = self.w2v_weight.shape[1]
-            self.n_vocab        = self.w2v_weight.shape[0]
+        if args.embedding_matrix is not None:
+            with open(args.embedding_matrix, 'rb') as f:
+                self.embedding_matrix = cPickle.load(f)
+                print("embedd matrix shape: ",self.embedding_matrix.shape)
+            self.dim_word_embed = self.embedding_matrix.shape[1]
+            self.n_vocab        = self.embedding_matrix.shape[0]
         else:
             self.n_vocab        = args.n_vocab
             self.dim_word_embed = args.dim_word_embed
 
     def build(self):
         print('Build model...')
-        if self.w2v_weight is not None:
+        if self.embedding_matrix is not None:
             embedding_layer = Embedding(self.n_vocab,output_dim= self.dim_word_embed,
-                                weights=[self.w2v_weight],
+                                weights=[self.embedding_matrix],
                                 input_length=self.n_word,
                                 trainable=False)
         else:
