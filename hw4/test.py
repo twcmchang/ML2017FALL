@@ -6,8 +6,8 @@ import time
 import keras
 import argparse
 from six.moves import cPickle
-from n_model import SentiLSTM
-from n_utils import DataLoader
+from model import SentiLSTM
+from utils import DataLoader
 
 def main():
     parser = argparse.ArgumentParser()
