@@ -7,8 +7,8 @@ import argparse
 import keras
 from six.moves import cPickle
 from sklearn.model_selection import train_test_split
-from model import SentiLSTM
-from utils import DataLoader, DataGenerator
+from n_model import SentiLSTM
+from n_utils import DataLoader
 
 def main():
     parser = argparse.ArgumentParser()
@@ -22,10 +22,10 @@ def main():
                         help='directory to store checkpointed models')
     parser.add_argument('--n_word', type=int, default=39,
                         help='maximal number of words in a sentence')
-    parser.add_argument('--w2v_vocab', type=str, default=None,
-                        help='pre-trained w2v model')
-    parser.add_argument('--w2v_weight', type=str, default=None,
-                        help='pre-trained w2v weight')
+    parser.add_argument('--tokenizer', type=str, default=None,
+                        help='pre-trained tokenizer')
+    parser.add_argument('--embedding_matrix', type=str, default=None,
+                        help='pre-trained embedding_matrix')
     parser.add_argument('--n_epoch', type=int, default=20,
                         help='number of epochs')
     parser.add_argument('--batch_size', type=int, default=64,
@@ -34,13 +34,15 @@ def main():
                         help='learning rate')
     parser.add_argument('--init_from', type=str, default=None,
                         help='--init_from')
-    parser.add_argument('--self_training_round', type=int, default=0,
-                        help='self training or not')
 
     args = parser.parse_args()
     train(args)
 
 def train(args):
+    if not os.path.exists(args.save_dir):
+        print("Create directory %s" % args.save_dir)
+        os.makedirs(args.save_dir)
+    
     d = DataLoader()
     if args.train_file is not None:
         d.read_train(args.train_file)
@@ -51,13 +53,25 @@ def train(args):
     if args.unlabeled_file is not None:
         d.read_augment(args.unlabeled_file)
 
-    if args.w2v_vocab is not None:
-        with open(args.w2v_vocab, 'rb') as f:
-            vocab = cPickle.load(f)
-            d.set_word_vocab(vocab)
+    if args.tokenizer is not None:
+        print("Read tokenizer")
+        with open(args.tokenizer, 'rb') as f:
+            d.tokenizer = cPickle.load(f)
+
+    if args.embedding_matrix is not None:
+        print("Read embedding_matrix")
+        with open(args.embedding_matrix, 'rb') as f:
+            d.embedding_matrix = cPickle.load(f)
     else:
-        print("Build vocabulary using the most frequent top %d words..." % args.n_vocab )
-        d.build_word_vocab(top_k_words = args.n_vocab)
+        print("Create w2v model, tokenizer, embedding_marix")
+        d.create_w2v_model()
+        with open(os.path.join(args.save_dir,"tokenizer.pkl"), 'wb') as f:
+            cPickle.dump(d.tokenizer,f)
+        with open(os.path.join(args.save_dir,"embedding_matrix.pkl"), 'wb') as f:
+            cPickle.dump(d.embedding_matrix,f)
+
+        args.tokenizer = os.path.join(args.save_dir,"tokenizer.pkl")
+        args.embedding_matrix = os.path.join(args.save_dir,"embedding_matrix.pkl")
 
     if args.init_from is not None:
         if not os.path.exists(os.path.join(args.init_from,"model.h5")):
@@ -73,17 +87,9 @@ def train(args):
     if args.unlabeled_file is not None:
         d.generate_X_augment(maxlen=args.n_word)
 
-    if not os.path.exists(args.save_dir):
-        print("Create directory %s" % args.save_dir)
-        os.makedirs(args.save_dir)
-    
     with open(os.path.join(args.save_dir, 'args.pkl'), 'wb') as f:
         print("Save configuration file.")
         cPickle.dump(args, f)
-
-    with open(os.path.join(args.save_dir, 'vocab.pkl'), 'wb') as f:
-        print("Save vocabulary file.")
-        cPickle.dump(obj = d.vocab,file=f)
 
     print("Training and testing split...")
     X_train, X_val, y_train, y_val = train_test_split(d.train_data, d.train_label, test_size=0.1)
@@ -98,71 +104,6 @@ def train(args):
            epochs = args.n_epoch,
            validation_data = (X_val,y_val),
            callbacks = [checkpoint,csv_logger,earlystop])
-
-    # if args.self_training_round > 0:
-    #     def one_hot_encoding(self, arr, num_classes):
-    #         res = np.zeros((arr.size, num_classes))
-    #         res[np.arange(arr.size),arr] = 1
-    #         return(res)
-
-    #     print("===== self training phrase =====")
-
-    #     for r in range(args.self_training_round):
-    #         print("%d round..." % r)
-    #         y_pred = md.predict(d.augment_data)
-    #         i_aug = [i for i in range(len(y_pred)) if np.max(y_pred[i]) >= 0.9]
-    #         print("add %d sentences using threshold = 0.9" % len(i_aug))
-    #         labels = [np.argmax(y_pred[i]) for i in i_aug]
-    #         X_train = np.concatenate((X_train , d.augment_data[i_aug]),axis=0)
-    #         y_train = np.concatenate((y_train , one_hot_encoding(np.array(labels),2)),axis=0)
-
-    #         train_gen = DataGenerator(X_train, y_train)
-
-    #         checkpoint = keras.callbacks.ModelCheckpoint(os.path.join(args.save_dir,str(r)+'_lstm'+str(args.dim_hidden)+'_wemb'+str(args.dim_word_embed)+'_model.h5'),monitor='val_loss',verbose=1,save_best_only=True,mode='auto')
-    #         csv_logger = keras.callbacks.CSVLogger(os.path.join(args.save_dir,str(r)+'_lstm'+str(args.dim_hidden)+'_wemb'+str(args.dim_word_embed)+'_training.log'))
-    #         earlystop  = keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0.001, patience=5, verbose=0, mode='auto')
-
-    #         md.fit_generator(generator = train_gen.generate(args.batch_size),
-    #                         epochs=args.n_epoch,
-    #                         steps_per_epoch = 400,
-    #                         validation_data = (X_val,y_val),
-    #                         callbacks=[checkpoint,csv_logger,earlystop])
-            # labels = [np.argmax(y_pred[i]) for i in range(len(y_pred))]
-        
-
-
-
-# def self_train(args):
-#     if args.self_training is True:
-#         if (args.init_from is not None) and (args.unlabeled_file is not None):
-#             if not os.path.exists(args.init_from,"model.h5"):
-#                 sys.exit("Error! model file is not found.")
-
-#             if not os.path.exists(args.init_from,"args.pkl"):
-#                 sys.exit("Error! configuration file is not found.")
-
-#             if not os.path.exists(args.init_from,"vocab.pkl"):
-#                 sys.exit("Error! vocabulary file is not found.")
-
-#             print("loaded pre-trained model from %s" % os.path.join(args.init_from,"model.h5"))
-#             md = keras.models.load_model(os.path.join(args.init_from,"model.h5"))
-            
-#             print("setting hyper-parameters from %s" % os.path.join(args.init_from,"args.pkl"))
-#             with open(os.path.join(args.init_from,"args.pkl"), 'rb') as f:
-#                 config = cPickle.load(f)
-#             args.n_word     = config.n_word
-#             args.n_vocab    = confif.n_vocab
-#             args.dim_hidden = config.dim_hidden
-#             args.dim_word_embed = config.dim_word_embed
-            
-#             print("setting vocabulary from %s" % os.path.join(args.init_from,"vocab.pkl"))
-#             with open(os.path.join(args.init_from,"vocab.pkl"), 'rb') as f:
-#                 vocab = cPickle.load(f)
-#             d.set_existing_vocab(vocab)
-            
-#         else:
-#             sys.exit("Self training mode cannot be without pre-trained model. Or make sure the unlabeled file is given.")
-    
 
 if __name__ == '__main__':
     main()
