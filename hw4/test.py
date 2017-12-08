@@ -6,8 +6,8 @@ import time
 import keras
 import argparse
 from six.moves import cPickle
-from model import SentiLSTM
-from utils import DataLoader
+from n_model import SentiLSTM
+from n_utils import DataLoader
 
 def main():
     parser = argparse.ArgumentParser()
@@ -22,15 +22,27 @@ def main():
     test(args)
 
 def test(args):
-    print("reading vocabulary...")
-    with open(os.path.join(args.save_dir,"vocab.pkl"), 'rb') as f:
-        vocab = cPickle.load(f)
-
-    with open(os.path.join(args.save_dir,"args.pkl"), 'rb') as f:
-        config = cPickle.load(f)
-
     d = DataLoader()
-    d.vocab = vocab
+    if os.path.exists(os.path.join(args.save_dir, "tokenizer.pkl")):
+        print("Read tokenizer")
+        with open(os.path.join(args.save_dir, "tokenizer.pkl"), 'rb') as f:
+            d.tokenizer = cPickle.load(f)
+    else:
+        sys.exit("Error! Please put your tokenizer in %s." % args.save_dir)
+
+    if os.path.exists(os.path.join(args.save_dir, "embedding_matrix.pkl")):
+        print("Read embedding_matrix")
+        with open(os.path.join(args.save_dir, "embedding_matrix.pkl"), 'rb') as f:
+            d.embedding_matrix = cPickle.load(f)
+    else:
+        sys.exit("Error! Please put your embedding_matrix in %s." % args.save_dir)
+    
+    if os.path.exists(os.path.join(args.save_dir,"args.pkl")):
+        with open(os.path.join(args.save_dir,"args.pkl"), 'rb') as f:
+            config = cPickle.load(f)
+    else:
+        sys.exit("Error! Please put your args in %s" % args.save_dir)
+
     if args.test_file is not None:
         d.read_test(test_file=args.test_file)
         d.generate_X_test(maxlen=config.n_word)
