@@ -7,8 +7,8 @@ import argparse
 import keras
 from six.moves import cPickle
 from sklearn.model_selection import train_test_split
-from n_model import SentiLSTM
-from n_utils import DataLoader
+from model import SentiLSTM
+from utils import DataLoader
 
 def main():
     parser = argparse.ArgumentParser()
