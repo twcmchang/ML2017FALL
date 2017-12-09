@@ -32,9 +32,10 @@ def test(args):
         sys.exit("Error! Please specify your model in use.")
     md.summary()
 
-    y_pred = md.predict(d.test_data)
-    #labels = [np.argmax(y_pred[i]) for i in range(len(y_pred))]
-    output = pd.DataFrame({"id":np.array(range(len(y_pred)))+1,"label":labels})
+    y_pred = md.predict([d.test_data[:,0],d.test_data[:,1]])
+    y_pred = [y_pred[i][0] for i in range(len(y_pred))]
+    output = pd.DataFrame({"TestDataID":np.array(range(len(y_pred)))+1,"Rating":np.array(y_pred)})
+    output = output[["TestDataID","Rating"]]
     output.to_csv(args.output, index=False)
     print("Testing completed and saved into %s." % args.output)
 
