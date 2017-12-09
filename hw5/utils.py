@@ -22,10 +22,10 @@ class DataLoader(object):
                 for line in f:
                     line = line.split(",")
                     train_data.append([int(line[1]),int(line[2])])
-                    train_label.append(int(line[3])-1) # rating range: [1,5]
+                    train_label.append(int(line[3])) # rating range: [1,5]
             self.train_data  = np.array(train_data)
             if classification:
-                self.train_label = to_categorical(train_label)
+                self.train_label = to_categorical(train_label-1)
             else:
                 self.train_label = np.array(train_label)
 
