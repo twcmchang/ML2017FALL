@@ -46,16 +46,16 @@ class DataLoader(object):
         else:
             print("Error! Neither train_file nor test_file is specified.")
 
-    # def read_test(self, test_file=None):
-    #     if test_file is not None:
-    #         with open(test_file) as f:
-    #             test_data = []
-    #             _ = f.readline() # skip the first header line: id,sentence
-    #             for line in f:
-    #                 line = line.split(",")
-    #                 test_data.append([int(line[1]),int(line[2])])
-    #         self.test_data = np.array(test_data)
-    #         print("test_data obtained.")
+    def read_test(self, test_file=None):
+        if test_file is not None:
+            with open(test_file) as f:
+                test_data = []
+                _ = f.readline() # skip the first header line: id,sentence
+                for line in f:
+                    line = line.split(",")
+                    test_data.append([int(line[1]),int(line[2])])
+            self.test_data = np.array(test_data)
+            print("test_data obtained.")
 
 
 class DataGenerator(object):
