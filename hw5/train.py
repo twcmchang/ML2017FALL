@@ -19,9 +19,9 @@ def main():
                         help='length of user and movie embedding')
     parser.add_argument('--n_epoch', type=int, default=20,
                         help='number of epochs')
-    parser.add_argument('--batch_size', type=int, default=64,
+    parser.add_argument('--batch_size', type=int, default=128,
                         help='minibatch size')
-    parser.add_argument('--learning_rate', type=float, default=0.001,
+    parser.add_argument('--learning_rate', type=float, default=0.0001,
                         help='learning rate')
     parser.add_argument('--init_from', type=str, default=None,
                         help='--init_from')
@@ -54,7 +54,7 @@ def train(args):
         cPickle.dump(args, f)
 
     print("Training and testing split...")
-    X_train, X_val, y_train, y_val = train_test_split(d.train_data, d.train_label, test_size=0.1)
+    X_train, X_val, y_train, y_val = train_test_split(d.train_data, d.train_label, test_size=0.25)
 
     opt = keras.optimizers.Adam(lr=args.learning_rate)
     md.compile(loss='mse',optimizer=opt)
