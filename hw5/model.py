@@ -27,7 +27,7 @@ class MF():
         mov_embedding = Flatten()(mov_embedding)
 
         output = Dot(axes=1)([usr_embedding, mov_embedding])
-        output = Dense(1,activation='relu')(output)
+        output = Dense(1,activation='linear')(output)
         # output = Dense(, activation='softmax')(added)
 
         model = Model([usr_input,mov_input],output)
