@@ -130,6 +130,7 @@ class DataLoader(object):
         if test_file is not None:
             with open(test_file) as f:
                 test_data = []
+                test_aux = []
                 _ = f.readline() # skip the first header line: id,sentence
                 for line in f:
                     aux = np.array([])
@@ -139,9 +140,13 @@ class DataLoader(object):
                         aux = np.append(aux,self.attr_usr[line[1]])
                     if self.attr_mov is not None:
                         aux = np.append(aux,self.attr_mov[line[2]])
+                        test_aux.append(aux)
                     test_data.append([int(line[1]),int(line[2])])
             self.test_data = np.array(test_data)
-            print("test_data obtained.")
+            print(test_data[0])
+            if self.attr_usr is not None or self.attr_mov is not None:
+                self.test_aux = np.array(test_aux)
+                print(test_aux[0])
 
 
 class DataGenerator(object):

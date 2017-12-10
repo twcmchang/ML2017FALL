@@ -9,13 +9,13 @@ from utils import DataLoader
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--train_file', type=str, default="data/train.csv",
+    parser.add_argument('--train_file', type=str, default="data/easy_train.csv",
                         help='input train_file')
-    parser.add_argument('--test_file', type=str, default="data/test.csv",
+    parser.add_argument('--test_file', type=str, default="data/easy_test.csv",
                         help='input test_file')
-    parser.add_argument('--user_file', type=str, default=None,#"data/users.csv",
+    parser.add_argument('--user_file', type=str, default="data/users.csv",
                         help='input user_file')
-    parser.add_argument('--movie_file', type=str, default=None,#"data/movies.csv",
+    parser.add_argument('--movie_file', type=str, default="data/movies.csv",
                         help='input movie_file')
     parser.add_argument('--save_dir', type=str, default='save',
                         help='directory to store checkpointed models')

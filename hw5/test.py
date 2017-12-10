@@ -14,17 +14,26 @@ def main():
                         help='testing filename')
     parser.add_argument('--output', type=str, default=None,
                         help='output filename')
-    parser.add_argument('--save_dir', type=str, default='save/',
+    parser.add_argument('--save_dir', type=str, default='save',
                         help='save directory')
     args = parser.parse_args()
     test(args)
 
 def test(args):
-    d = DataLoader()
+    if os.path.exists(os.path.join(args.save_dir, "data_loader.pkl")):
+        with open(os.path.join(args.save_dir, "data_loader.pkl"), 'rb') as f:
+            d = cPickle.load(f)
+    else:
+        sys.exit("Error! Please put your DataLoader in %s." % args.save_dir)
+
     if args.test_file is not None:
         d.read_test(test_file=args.test_file)
     else:
         sys.exit("Error! Please specify your testing file.")
+
+    args.n_usr = d.n_usr
+    args.n_mov = d.n_mov
+    args.n_aux = d.n_aux
 
     if os.path.exists(os.path.join(args.save_dir,"model.h5")):
         md = keras.models.load_model(os.path.join(args.save_dir,"model.h5"))
@@ -40,7 +49,7 @@ def test(args):
         else:
             return(x)
 
-    y_pred = md.predict([d.test_data[:,0],d.test_data[:,1]])
+    y_pred = md.predict([d.test_data[:,0],d.test_data[:,1],d.test_aux[:,:]])
     y_pred = [myround(y_pred[i][0]) for i in range(len(y_pred))]
     output = pd.DataFrame({"TestDataID":np.array(range(len(y_pred)))+1,"Rating":np.array(y_pred)})
     output = output[["TestDataID","Rating"]]
