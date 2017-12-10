@@ -13,6 +13,10 @@ def main():
                         help='input train_file')
     parser.add_argument('--test_file', type=str, default="data/test.csv",
                         help='input test_file')
+    parser.add_argument('--user_file', type=str, default=None,#"data/users.csv",
+                        help='input user_file')
+    parser.add_argument('--movie_file', type=str, default=None,#"data/movies.csv",
+                        help='input movie_file')
     parser.add_argument('--save_dir', type=str, default='save',
                         help='directory to store checkpointed models')
     parser.add_argument('--dim_embed', type=int, default=100,
@@ -34,6 +38,14 @@ def train(args):
         os.makedirs(args.save_dir)
     
     d = DataLoader()
+    if args.user_file is not None:
+        d.read_user(user_file=args.user_file)
+    if args.movie_file is not None:
+        d.read_movie(movie_file=args.movie_file)
+
+    args.n_aux = d.n_aux
+    print("Use %d auxiliary meta input" % args.n_aux)
+    
     if args.train_file is not None and args.test_file is not None:
         d.read_train_test(train_file=args.train_file,test_file=args.test_file,classification=False)
     else:
@@ -41,6 +53,11 @@ def train(args):
 
     args.n_usr = d.n_usr
     args.n_mov = d.n_mov
+
+
+    with open(os.path.join(args.save_dir, 'data_loader.pkl'), 'wb') as f:
+        print("Save DataLoader file.")
+        cPickle.dump(d, f)
 
     if args.init_from is not None:
         if not os.path.exists(os.path.join(args.init_from,"model.h5")):
@@ -53,9 +70,6 @@ def train(args):
         print("Save configuration file.")
         cPickle.dump(args, f)
 
-    print("Training and testing split...")
-    X_train, X_val, y_train, y_val = train_test_split(d.train_data, d.train_label, test_size=0.25)
-
     opt = keras.optimizers.Adam(lr=args.learning_rate)
     md.compile(loss='mse',optimizer=opt)
 
@@ -63,10 +77,19 @@ def train(args):
     csv_logger = keras.callbacks.CSVLogger(os.path.join(args.save_dir,'training.log'))
     earlystop  = keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0.0001, patience=5, verbose=0, mode='auto')
 
-    md.fit([X_train[:,0],X_train[:,1]],y_train,
-           epochs = args.n_epoch,
-           validation_data = ([X_val[:,0],X_val[:,1]],y_val),
-           callbacks = [checkpoint,csv_logger,earlystop])
+    print("Training and testing split...")
+    if args.user_file is not None or args.movie_file is not None:
+        X_train, X_val, X_train_aux, X_val_aux, y_train, y_val = train_test_split(d.train_data, d.train_aux, d.train_label, test_size=0.25)
+        md.fit([X_train[:,0], X_train[:,1], X_train_aux[:,:]],y_train,
+               epochs = args.n_epoch,
+               validation_data = ([X_val[:,0],X_val[:,1],X_val_aux[:,:]],y_val),
+               callbacks = [checkpoint,csv_logger,earlystop])
+    else:
+        X_train, X_val, y_train, y_val = train_test_split(d.train_data, d.train_label, test_size=0.25)
+        md.fit([X_train[:,0], X_train[:,1]],y_train,
+               epochs = args.n_epoch,
+               validation_data = ([X_val[:,0],X_val[:,1]],y_val),
+               callbacks = [checkpoint,csv_logger,earlystop])
 
 if __name__ == '__main__':
     main()
