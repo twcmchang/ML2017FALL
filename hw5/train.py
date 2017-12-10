@@ -17,7 +17,7 @@ def main():
                         help='directory to store checkpointed models')
     parser.add_argument('--dim_embed', type=int, default=100,
                         help='length of user and movie embedding')
-    parser.add_argument('--n_epoch', type=int, default=20,
+    parser.add_argument('--n_epoch', type=int, default=10,
                         help='number of epochs')
     parser.add_argument('--batch_size', type=int, default=128,
                         help='minibatch size')
