@@ -1,4 +1,4 @@
-from keras.layers import Embedding,Input,Dense,Bidirectional,Dropout,Dot,Add,Flatten
+from keras.layers import Embedding,Input,Dense,Bidirectional,Dropout,Dot,Add,Flatten,Concatenate
 from keras.models import Model,load_model
 from six.moves import cPickle
 from keras import backend as K
@@ -9,6 +9,10 @@ class MF():
         self.dim_embed  = args.dim_embed
         self.n_usr      = args.n_usr
         self.n_mov      = args.n_mov
+        if args.n_aux > 0:
+            self.n_aux  = args.n_aux
+        else:
+            self.n_aux  = None
 
     def build(self):
         print('Build model...')
@@ -27,10 +31,15 @@ class MF():
         mov_embedding = Flatten()(mov_embedding)
 
         output = Dot(axes=1)([usr_embedding, mov_embedding])
-        output = Dense(1,activation='linear')(output)
+        if self.n_aux is not None:
+            aux_input = Input(shape=(self.n_aux,), name='aux_input')
+            output = Concatenate()([output, aux_input])
+        output = Dense(1,activation='linear')(output)   
         # output = Dense(, activation='softmax')(added)
-
-        model = Model([usr_input,mov_input],output)
+        if self.n_aux is not None:
+            model = Model([usr_input,mov_input,aux_input],output)
+        else:
+            model = Model([usr_input,mov_input],output)
         model.summary()
         return(model)
 
