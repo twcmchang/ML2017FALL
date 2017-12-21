@@ -1,5 +1,6 @@
 from keras.layers import Embedding,Input,Dense,Bidirectional,Dropout,Dot,Add,Flatten,Concatenate
 from keras.models import Model,load_model
+from keras.regularizers import l2
 from six.moves import cPickle
 from keras import backend as K
 
@@ -43,7 +44,8 @@ class MF():
         output = Add()([output, usr_bias, mov_bias])
         if self.n_aux is not None:
             aux_input = Input(shape=(self.n_aux,), name='aux_input')
-            output = Concatenate()([output, aux_input])
+            aux_embedding = Dense(5,activation='relu',kernel_regularizer=l2(0.0001))(aux_input)
+            output = Concatenate()([output, aux_embedding])
         output = Dense(1,activation='linear')(output)   
         # output = Dense(, activation='softmax')(added)
         if self.n_aux is not None:
