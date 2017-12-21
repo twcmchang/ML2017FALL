@@ -30,12 +30,14 @@ class MF():
         usr_embedding = Flatten()(usr_embedding)
 
         usr_bias = self.usr_bias(usr_input)
+        usr_bias = Flatten()(usr_bias)
 
         mov_input = Input(shape=(1,),dtype='int32')
         mov_embedding = self.mov_embedding_matrix(mov_input)
         mov_embedding = Flatten()(mov_embedding)
 
         mov_bias = self.mov_bias(mov_input)
+        mov_bias = Flatten()(mov_bias)
 
         output = Dot(axes=1)([usr_embedding, mov_embedding])
         output = Add()([output, usr_bias, mov_bias])
