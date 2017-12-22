@@ -9,9 +9,9 @@ from utils import DataLoader
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--train_file', type=str, default="data/easy_train.csv",
+    parser.add_argument('--train_file', type=str, default="data/train.csv",
                         help='input train_file')
-    parser.add_argument('--test_file', type=str, default="data/easy_test.csv",
+    parser.add_argument('--test_file', type=str, default="data/test.csv",
                         help='input test_file')
     parser.add_argument('--user_file', type=str, default="data/users.csv",
                         help='input user_file')
@@ -21,7 +21,7 @@ def main():
                         help='directory to store checkpointed models')
     parser.add_argument('--dim_embed', type=int, default=100,
                         help='length of user and movie embedding')
-    parser.add_argument('--n_epoch', type=int, default=10,
+    parser.add_argument('--n_epoch', type=int, default=20,
                         help='number of epochs')
     parser.add_argument('--batch_size', type=int, default=128,
                         help='minibatch size')
@@ -79,13 +79,13 @@ def train(args):
 
     print("Training and testing split...")
     if args.user_file is not None or args.movie_file is not None:
-        X_train, X_val, X_train_aux, X_val_aux, y_train, y_val = train_test_split(d.train_data, d.train_aux, d.train_label, test_size=0.25)
+        X_train, X_val, X_train_aux, X_val_aux, y_train, y_val = train_test_split(d.train_data, d.train_aux, d.train_label, test_size=0.15)
         md.fit([X_train[:,0], X_train[:,1], X_train_aux[:,:]],y_train,
                epochs = args.n_epoch,
                validation_data = ([X_val[:,0],X_val[:,1],X_val_aux[:,:]],y_val),
                callbacks = [checkpoint,csv_logger,earlystop])
     else:
-        X_train, X_val, y_train, y_val = train_test_split(d.train_data, d.train_label, test_size=0.25)
+        X_train, X_val, y_train, y_val = train_test_split(d.train_data, d.train_label, test_size=0.15)
         md.fit([X_train[:,0], X_train[:,1]],y_train,
                epochs = args.n_epoch,
                validation_data = ([X_val[:,0],X_val[:,1]],y_val),

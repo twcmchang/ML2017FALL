@@ -16,6 +16,10 @@ def main():
                         help='output filename')
     parser.add_argument('--save_dir', type=str, default='save',
                         help='save directory')
+    parser.add_argument('--user_file', type=str, default="data/users.csv",
+                        help='input user_file')
+    parser.add_argument('--movie_file', type=str, default="data/movies.csv",
+                        help='input movie_file')
     args = parser.parse_args()
     test(args)
 
@@ -25,6 +29,18 @@ def test(args):
             d = cPickle.load(f)
     else:
         sys.exit("Error! Please put your DataLoader in %s." % args.save_dir)
+    
+    d = DataLoader()
+    if args.user_file is not None:
+        d.read_user(user_file=args.user_file)
+    if args.movie_file is not None:
+        d.read_movie(movie_file=args.movie_file)
+
+    args.n_aux = d.n_aux
+    print("Use %d auxiliary meta input" % args.n_aux)
+
+    args.n_usr = d.n_usr
+    args.n_mov = d.n_mov
 
     if args.test_file is not None:
         d.read_test(test_file=args.test_file)

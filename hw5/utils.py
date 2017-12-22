@@ -61,7 +61,8 @@ class DataLoader(object):
                 attr_mov[line[0]] = [year, this_type]
             # [year, hot_encoding_of_types]    
             for key,value in attr_mov.items():
-                attr_mov[key] = np.append(value[0],np.sum(self.one_hot_encoding(value[1],count),axis=0))
+                ft_type = np.sum(self.one_hot_encoding(value[1],count),axis=0)
+                attr_mov[key] = np.append(value[0],ft_type/np.sum(ft_type))
             print("There are %d movies in total and can be categorized into %d types." % (len(attr_mov),count))
             self.attr_mov = attr_mov
             self.n_aux += (count+1)
